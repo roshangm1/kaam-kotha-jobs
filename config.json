@@ -1,0 +1,142 @@
+{
+  "_comment": "Prototype matrix. calls = countries x areas x industries (page 1, 50 results). Keep under the Adzuna free limits (250/day, 2,500/month).",
+  "results_per_page": 50,
+  "max_days_old": 30,
+  "min_wage_hourly": {
+    "gb": 12.71,
+    "au": 26.44
+  },
+  "full_time_hours": {
+    "gb": 40,
+    "au": 40
+  },
+  "currency": {
+    "gb": "£",
+    "au": "A$"
+  },
+  "adzuna_domain": {
+    "gb": "https://www.adzuna.co.uk",
+    "au": "https://www.adzuna.com.au"
+  },
+  "areas": {
+    "gb": [
+      {
+        "slug": "aldershot",
+        "name": "Aldershot & Farnborough (Rushmoor)",
+        "where": "Aldershot",
+        "distance_km": 10
+      },
+      {
+        "slug": "woolwich",
+        "name": "Woolwich & Greenwich",
+        "where": "Woolwich",
+        "distance_km": 8
+      },
+      {
+        "slug": "reading",
+        "name": "Reading",
+        "where": "Reading",
+        "distance_km": 10
+      },
+      {
+        "slug": "hounslow",
+        "name": "Hounslow & Heathrow",
+        "where": "Hounslow",
+        "distance_km": 8
+      }
+    ],
+    "au": [
+      {
+        "slug": "strathfield",
+        "name": "Strathfield & Burwood",
+        "where": "Strathfield",
+        "distance_km": 6
+      },
+      {
+        "slug": "hurstville",
+        "name": "Hurstville & Kogarah (Georges River)",
+        "where": "Hurstville",
+        "distance_km": 6
+      },
+      {
+        "slug": "auburn",
+        "name": "Auburn & Granville (Cumberland)",
+        "where": "Auburn, NSW",
+        "distance_km": 6
+      },
+      {
+        "slug": "hobart",
+        "name": "Hobart & Glenorchy",
+        "where": "Hobart",
+        "distance_km": 15
+      }
+    ]
+  },
+  "industries": [
+    {
+      "slug": "care",
+      "name": "Care & health",
+      "what_or": {
+        "gb": "carer care assistant support worker healthcare HCA",
+        "au": "aged care carer AIN PCA disability support worker"
+      }
+    },
+    {
+      "slug": "hospitality",
+      "name": "Restaurants & kitchens",
+      "what_or": {
+        "gb": "chef kitchen porter barista waiter waitress cook",
+        "au": "chef kitchen hand barista waiter waitress cook"
+      }
+    },
+    {
+      "slug": "retail",
+      "name": "Retail & grocery",
+      "what_or": {
+        "gb": "retail customer assistant supermarket store colleague cashier",
+        "au": "retail supermarket store team member cashier checkout"
+      }
+    },
+    {
+      "slug": "cleaning",
+      "name": "Cleaning",
+      "what_or": {
+        "gb": "cleaner cleaning housekeeping domestic",
+        "au": "cleaner cleaning housekeeping janitor"
+      }
+    },
+    {
+      "slug": "warehouse",
+      "name": "Warehouse",
+      "what_or": {
+        "gb": "warehouse picker packer forklift operative",
+        "au": "warehouse picker packer forklift storeperson"
+      }
+    },
+    {
+      "slug": "security",
+      "name": "Security",
+      "what_or": {
+        "gb": "security officer SIA door supervisor CCTV",
+        "au": "security officer guard crowd controller CCTV"
+      }
+    },
+    {
+      "slug": "delivery",
+      "name": "Delivery & driving",
+      "what_or": {
+        "gb": "delivery driver courier van driver",
+        "au": "delivery driver courier van driver"
+      }
+    },
+    {
+      "slug": "hotels",
+      "name": "Hotels",
+      "what_or": {
+        "gb": "hotel room attendant housekeeper receptionist night porter",
+        "au": "hotel room attendant housekeeper receptionist night auditor"
+      }
+    }
+  ],
+  "_comment_hours": "Adzuna annualises hourly ads at 40 h/week (e.g. £12.71/hr -> £26,436.80), so 40 h is used to convert annual figures back; a job is only tagged 'below' if it is still below at 35 h/week."
+}

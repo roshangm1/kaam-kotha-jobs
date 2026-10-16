@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaam Kotha Jobs – care, hospitality, cleaning and more near you</title>
+<meta name="description" content="Jobs in care, restaurants, retail, cleaning, warehouses, security, delivery and hotels near Nepali communities in the UK and Australia, with minimum-wage pay checks.">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true">का</span><span>Kaam Kotha <b>Jobs</b></span></a>
+  <nav><a class="btn ghost" href="post-a-job.html">Post a job free</a></nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Real jobs near you, <span>paid properly</span></h1>
+    <p>Care, restaurants, retail, cleaning, warehouses, security, delivery and hotels, in the areas where our community lives. <span lang="ne">तपाईं नजिकको काम।</span></p>
+    <div class="country" role="tablist" aria-label="Country">
+      <button data-country="gb" role="tab">🇬🇧 United Kingdom</button>
+      <button data-country="au" role="tab">🇦🇺 Australia</button>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <form class="filters" id="filters" onsubmit="return false">
+    <input type="search" id="q" placeholder="Search e.g. kitchen porter, carer, cleaner" aria-label="Keyword search">
+    <select id="industry" aria-label="Industry"><option value="">All industries</option></select>
+    <select id="area" aria-label="Area"><option value="">All areas</option></select>
+    <select id="pay" aria-label="Pay">
+      <option value="">Any pay</option>
+      <option value="meets_min">Minimum wage or more</option>
+      <option value="known">Pay stated</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="student"> Student-friendly hours</label>
+  </form>
+
+  <aside class="cta app-cta">
+    <div><b>Get job alerts in the Kaam Kotha app</b><span>New jobs in your area and industry, straight to your phone. Free.</span></div>
+    <a class="btn" href="https://link.kaamkotha.com/go">Get the app</a>
+  </aside>
+
+  <p id="count" class="count" aria-live="polite"></p>
+  <ol id="list" class="list"></ol>
+  <button id="more" class="btn ghost more" hidden>Show more jobs</button>
+
+  <section class="notes">
+    <h2>About the pay badges</h2>
+    <p><span class="pay pay-meets_min">Pays minimum wage or more</span> The advertised pay is at least <b id="mw"></b> an hour. Annual salaries are converted using standard full-time hours.
+    <span class="pay pay-check">Check pay</span> Part of the range, or a pro-rata, apprentice or part-time figure, may be below it, so check the advert.
+    <span class="pay pay-unknown">Pay not stated</span> No pay was advertised. Ask before you accept.</p>
+    <p id="hidden-note" class="small"></p>
+    <p class="small">Student visa holders: UK degree-level students can usually work up to 20 hours a week in term time; Australian student visa holders can work 48 hours a fortnight while their course is in session. Check your own visa conditions.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>Job listings provided by</span>
+  <a class="adzuna-badge" id="foot-adzuna" href="https://www.adzuna.co.uk" target="_blank" rel="noopener">Jobs by <span>Adzuna</span></a>
+  <span class="small">Kaam Kotha Jobs, prototype. <a href="post-a-job.html">Employers: post a job free</a></span>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
