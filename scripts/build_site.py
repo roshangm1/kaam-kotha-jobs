@@ -4,7 +4,7 @@ Output:
   site/index.html, site/post-a-job.html, site/assets/*   (hand-written, kept in repo)
   site/data/jobs.json                                    (all publishable jobs)
   site/jobs/<id>.html                                    (one noindex page per Adzuna job)
-  site/sitemap.xml                                       (home + post-a-job only; job pages are noindex)
+  (sitemap.xml is served dynamically by site/_worker.js)
 Jobs tagged pay 'below' are never published (see seeding plan §4.6).
 """
 import html, json, re, shutil, sqlite3
@@ -38,37 +38,58 @@ def pay_text(j):
     return f"{cur}{lo:.2f}" + (f"–{cur}{hi:.2f}" if hi and hi != lo else "") + " an hour"
 
 
+HEAD_LINKS = (
+    '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">'
+    '<link rel="stylesheet" href="/assets/app.css">')
+ICON = {"care": "🩺", "hospitality": "🍳", "retail": "🛒", "cleaning": "🧽", "warehouse": "📦",
+        "security": "🛡️", "delivery": "🚚", "hotels": "🏨"}
+PAY_PILL = {"meets_min": ("ok", "✓ Min. wage+"), "check": ("warn", "Check pay"), "unknown": ("", "Pay not stated")}
+
+
 def job_page(j, area_names, ind_names):
+    """Aggregated (Adzuna) job page: noindex, Adzuna attribution, apply via redirect_url."""
     e = html.escape
     dom = CFG["adzuna_domain"][j["country"]]
     floor = CFG["min_wage_hourly"][j["country"]]
     cur = CFG["currency"][j["country"]]
-    badge = PAY_LABEL[j["pay_tag"]]
+    cls, label = PAY_PILL[j["pay_tag"]]
+    ind = ind_names.get(j["industry"], j["industry"])
+    pt = pay_text(j)
+    country = "United Kingdom" if j["country"] == "gb" else "Australia"
     return f"""<!doctype html>
 <html lang="en-GB"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, follow">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, follow"><meta name="theme-color" content="#0b1f4d">
 <title>{e(j['title'])} – {e(j['location'])} | Kaam Kotha Jobs</title>
-<link rel="stylesheet" href="../assets/app.css">
+{HEAD_LINKS}
 </head><body>
-<header class="top"><a class="brand" href="../index.html?country={j['country']}"><span class="logo">का</span><span>Kaam Kotha <b>Jobs</b></span></a></header>
-<main class="wrap job-detail">
-  <a class="back" href="../index.html?country={j['country']}">← All jobs</a>
-  <h1>{e(j['title'])}</h1>
-  <p class="meta">{e(j['company'] or 'Employer not named')} · {e(j['location'])}</p>
-  <p class="tags"><span class="pay pay-{j['pay_tag']}">{badge}</span>
-    {'<span class="tag">Student-friendly hours</span>' if j['student_friendly'] else ''}
-    <span class="tag">{e(ind_names.get(j['industry'], j['industry']))}</span></p>
-  {f'<p class="paytext">{e(pay_text(j))}</p>' if pay_text(j) else ''}
-  <p class="desc">{e(clean(j['description']))}</p>
-  <p class="small">Posted {e((j['created'] or '')[:10])}. Minimum-wage check uses {cur}{floor:.2f}/hr ({'UK National Living Wage, 21+' if j['country']=='gb' else 'Australian National Minimum Wage'}); awards, age and apprentice rates can differ. Always check the full advert.</p>
-  <div class="actions">
-    <a class="btn apply" href="{e(j['redirect_url'])}" rel="nofollow noopener" target="_blank">Read full advert &amp; apply</a>
-    <a class="adzuna-badge" href="{dom}" rel="noopener" target="_blank" title="Jobs by Adzuna">Jobs by <span>Adzuna</span></a>
-  </div>
-  <aside class="cta"><b>Get job alerts in the Kaam Kotha app</b><span>New {e(ind_names.get(j['industry'], ''))} jobs near {e(area_names.get(j['area'], ''))}, straight to your phone.</span><a class="btn" href="https://link.kaamkotha.com/go">Get the app</a></aside>
+<header class="nav"><div class="wrap"><a class="brand" href="/?country={j['country']}"><span class="mark" aria-hidden="true">का</span><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
+<div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>
+<main class="wrap narrow detail">
+  <a class="crumb" href="/?country={j['country']}">← All {country} jobs</a>
+  <article class="detail-card">
+    <div class="job-top"><div class="avatar" aria-hidden="true">{ICON.get(j['industry'], '💼')}</div>
+      <div class="pills" style="margin:0;align-self:center"><span class="pill {cls}">{label}</span>{'<span class="pill info">🎓 Student-friendly</span>' if j['student_friendly'] else ''}<span class="pill">{e(ind)}</span></div></div>
+    <h1>{e(j['title'])}</h1>
+    <div class="sub muted">{e(j['company'] or 'Employer not named')} · {e(j['location'])}</div>
+    <div class="facts">
+      <div class="fact"><span>Pay</span><b>{e(pt) if pt else 'Not stated'}</b></div>
+      <div class="fact"><span>Industry</span><b>{ICON.get(j['industry'], '')} {e(ind)}</b></div>
+      <div class="fact"><span>Posted</span><b>{e((j['created'] or '')[:10])}</b></div>
+    </div>
+    <h2 style="font-size:18px">Summary</h2>
+    <div class="prose">{e(clean(j['description']))}</div>
+    <div class="apply-box">
+      <a class="btn btn-primary btn-lg" href="{e(j['redirect_url'])}" rel="nofollow noopener" target="_blank">Read full advert &amp; apply</a>
+      <a class="adzuna" href="{dom}" rel="noopener" target="_blank" title="Jobs by Adzuna">Jobs by <b>Adzuna</b></a>
+    </div>
+    <p class="note" style="margin-top:16px">Minimum-wage check uses {cur}{floor:.2f}/hr ({'UK National Living Wage, 21+' if j['country']=='gb' else 'Australian National Minimum Wage'}); awards, age and apprentice rates can differ. Always check the full advert. Never pay anyone to get a job.</p>
+  </article>
+  <div class="panel app-panel" style="margin-top:16px"><h3>Get job alerts in the Kaam Kotha app</h3><p>New {e(ind.lower())} jobs near {e(area_names.get(j['area'], 'you'))}, straight to your phone.</p><a class="btn btn-primary" href="https://link.kaamkotha.com/go">Get the app</a></div>
 </main>
-<footer class="foot"><span>Job listings provided by <a href="{dom}">Adzuna</a>.</span><span>Kaam Kotha Jobs prototype.</span></footer>
+<nav class="bottom-bar" aria-label="Apply"><a class="btn btn-primary" href="{e(j['redirect_url'])}" rel="nofollow noopener" target="_blank">Apply</a><a class="adzuna" href="{dom}" rel="noopener" target="_blank">Jobs by <b>Adzuna</b></a></nav>
+<footer class="footer"><div class="wrap"><span>Job listing provided by <a class="adzuna" href="{dom}" rel="noopener" target="_blank">Jobs by <b>Adzuna</b></a></span><span><a href="/">All jobs</a></span></div></footer>
 </body></html>"""
 
 
@@ -119,9 +140,8 @@ def main():
         "hidden_below_min": hidden, "collapsed_duplicates": collapsed,
     }
     (SITE / "data" / "jobs.json").write_text(json.dumps({"meta": meta, "jobs": out}, ensure_ascii=False, separators=(",", ":")))
-    (SITE / "sitemap.xml").write_text(
-        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f"  <url><loc>{BASE_URL}/</loc></url>\n  <url><loc>{BASE_URL}/post-a-job.html</loc></url>\n</urlset>\n")
+    # /sitemap.xml is generated dynamically by site/_worker.js (home, post-a-job, approved employer posts).
+    (SITE / "sitemap.xml").unlink(missing_ok=True)
     print(f"Built {len(out)} job pages ({hidden} below-minimum jobs hidden, {collapsed} near-duplicates collapsed) -> {SITE}")
 
 

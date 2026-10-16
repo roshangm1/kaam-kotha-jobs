@@ -1,0 +1,17 @@
+# Cloudflare Pages config, used by `wrangler pages deploy` (GitHub workflow) so deploys keep bindings.
+# Secrets (TURNSTILE_SECRET) are NOT stored here; set them with `wrangler pages secret put` or the dashboard.
+name = "kaam-kotha-jobs"
+pages_build_output_dir = "site"
+compatibility_date = "2026-10-01"
+
+[vars]
+ACCESS_TEAM_DOMAIN = "brainants.cloudflareaccess.com"
+ACCESS_AUD = "1686dd523af9d12f03fadcf22ca2cb1d0d62bae3b47238ba1bc686e6ef11407b"
+ADMIN_EMAILS = "roshan@kaamkotha.com,roosan.gm@gmail.com"
+TURNSTILE_SITEKEY = "0x4AAAAAAFYfN0sS1pTkSFRn"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kaam-kotha-jobs"
+database_id = "a1a5c0af-01c8-43f2-a349-f90e989da13a"
+migrations_dir = "migrations"

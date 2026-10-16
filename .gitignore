@@ -29,3 +29,8 @@ venv/
 .idea/
 .vscode/
 *.log
+# Wrangler local state and local secrets
+.wrangler/
+.dev.vars
+ADMIN_TOKEN.txt
+node_modules/

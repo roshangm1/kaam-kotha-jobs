@@ -1,6 +1,10 @@
-# Cloudflare Pages: aggregated (Adzuna) job pages must not be indexed (seeding plan §4.8)
-/jobs/*
-  X-Robots-Tag: noindex
+# Static asset headers. The advanced-mode worker (_worker.js) also sets X-Robots-Tag: noindex
+# on aggregated Adzuna job pages (/jobs/<id>) and /data/*; employer pages (/jobs/p/<id>) stay indexable.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
 /data/*
   X-Robots-Tag: noindex
   Cache-Control: public, max-age=900
+/assets/*
+  Cache-Control: public, max-age=3600

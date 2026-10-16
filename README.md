@@ -1,9 +1,16 @@
-# Kaam Kotha Jobs: prototype
+# Kaam Kotha Jobs
 
-A zero-cost job portal prototype for Nepali communities in the UK and Australia. It pulls
-entry-level jobs (care, restaurants, retail, cleaning, warehouse, security, delivery, hotels) from the
-**Adzuna API** for a few key Nepali-community areas, tags pay against the minimum wage, and publishes
-a static, mobile-friendly site that can be hosted free on Cloudflare Pages.
+Live at **https://jobs.kaamkotha.com** (Cloudflare Pages project `kaam-kotha-jobs`).
+
+A zero-cost job portal for Nepali communities in the UK and Australia. It combines two sources:
+
+1. **Employer posts:** employers submit a job free at `/post-a-job`. Posts are stored in Cloudflare
+   D1, checked by a person at `/admin`, and published for 30 days with a *Posted directly by employer*
+   badge, ahead of aggregated jobs. Each approved post gets an indexable page at `/jobs/p/<id>` with
+   schema.org `JobPosting` data.
+2. **Aggregated jobs:** entry-level jobs (care, restaurants, retail, cleaning, warehouse, security,
+   delivery, hotels) from the **Adzuna API** for key Nepali-community areas. Pay is tagged against the
+   minimum wage and the jobs are published as static, `noindex` pages.
 
 It is built on the seeding plan in `/workspace/research/kaam-kotha-job-seeding-plan.md`, which
 covers licensed feeds rather than scraping, Adzuna attribution, `noindex` on aggregated job pages
@@ -14,7 +21,10 @@ config.json                 areas, industries, keywords, wage floors
 scripts/adzuna_client.py    tiny Adzuna client (reads the key from the environment; counts every call)
 scripts/fetch_jobs.py       fetch -> relevance filter -> pay/student tags -> SQLite (dedupe by Adzuna id)
 scripts/build_site.py       SQLite -> site/data/jobs.json + site/jobs/<id>.html (noindex)
-site/                       static front end (index.html, post-a-job.html, assets/, _headers, robots.txt)
+site/                       front end (index.html, post-a-job.html, assets/, _headers, robots.txt)
+site/_worker.js             Pages advanced-mode worker: /api/jobs, /api/admin/*, /admin, /jobs/p/<id>, /sitemap.xml
+wrangler.toml               Pages config: D1 binding + public vars (no secrets)
+migrations/0001_init.sql    D1 schema (posts, submit_log)
 .github/workflows/refresh-jobs.yml   cron fetch + build + deploy to Cloudflare Pages
 data/                       jobs.sqlite, raw API responses, call log (created locally; git-ignored)
 screenshots/                screenshots of the prototype
@@ -32,8 +42,19 @@ export ADZUNA_APP_ID=...            # your Adzuna application ID
 export ADZUNA_APP_KEY=...            # never commit this; it is only read from the environment (.env is git-ignored)
 python scripts/fetch_jobs.py --max-calls 64   # 64 API calls (2 countries x 4 areas x 8 industries)
 python scripts/build_site.py
-cd site && python -m http.server 8080       # open http://localhost:8080
+cd site && python -m http.server 8080       # static only: open http://localhost:8080
 ```
+
+To run the full site locally, including the job-post API and a local D1 database:
+
+```bash
+printf 'TURNSTILE_SECRET=1x0000000000000000000000000000000AA\n' > .dev.vars   # Turnstile's always-pass test secret
+npx wrangler d1 migrations apply kaam-kotha-jobs --local
+npx wrangler pages dev                       # http://localhost:8788
+```
+
+`.dev.vars` and `.wrangler/` are git-ignored. The form's site key only works on the live domains, so
+test locally with curl, or use Turnstile's test site key `1x00000000000000000000AA` in `assets/post.js`.
 
 To rebuild the database from the cached raw responses in `data/raw/` without using any API calls:
 
@@ -42,7 +63,65 @@ rm -f data/jobs.sqlite && python scripts/fetch_jobs.py --from-cache && python sc
 ```
 
 You can link straight to a filtered view, for example
-`/index.html?country=gb&industry=care&area=reading&pay=meets_min&student=1&q=night`.
+`/?country=gb&industry=care&area=reading&pay=meets_min&student=1&direct=1&q=night`.
+
+## Employer job posts
+
+| Route | What it does |
+|---|---|
+| `GET /post-a-job` | Multi-section form with inline validation, a live preview card and Cloudflare Turnstile |
+| `POST /api/jobs` | Validates, rate-limits (10 attempts an hour per hashed IP), verifies Turnstile, stores as `pending` |
+| `GET /api/jobs` | Approved, unexpired posts (no private fields); the homepage merges these first |
+| `GET /jobs/p/<id>` | Indexable job page with `JobPosting` JSON-LD; 404 if pending or rejected, 410 once expired |
+| `GET /sitemap.xml` | Home, post-a-job and every live employer post (generated on request) |
+| `GET /admin` | Moderation UI (Cloudflare Access) |
+| `GET /api/admin/jobs?status=pending\|approved\|rejected\|expired\|all` | List posts, including the private contact email |
+| `POST /api/admin/jobs` | Admin-created post (e.g. a job taken by phone). Same validation, no Turnstile |
+| `POST /api/admin/jobs/<id>/approve\|reject\|expire` | Approve (live for 30 days), reject (optional `{"note": ...}`) or expire now |
+| `DELETE /api/admin/jobs/<id>` | Delete permanently |
+
+**Server-side rules** (`validate()` in `site/_worker.js`):
+
+- Required fields and length limits. UK or Australian postcode format. Apply method is an email
+  address, a phone number or an `https://` URL.
+- **Minimum wage:** the hourly equivalent is the pay ÷ hours a week (weekly pay) or ÷ (52 × hours a
+  week) (annual pay). It must be at least UK £12.71 or AU A$26.44, otherwise the post is rejected with
+  a message that explains the calculation.
+- **Open to everyone:** requirements about nationality, ethnicity, religion, age or gender are
+  rejected, for example "Nepali only", "female preferred", "age 18-30", "must be under 30" or
+  "नेपाली मात्र". Language skills ("Nepali or Hindi speaking a plus"), "fluent English required" and
+  "must be over 18" are allowed.
+- Candidate fees ("registration fee", "pay a deposit") are rejected.
+- Validation runs before the Turnstile check, so the employer sees field errors straight away.
+- The contact email is private. It appears only in the admin view, never in `/api/jobs` or on the
+  public page. Only the chosen apply method is shown publicly.
+- No emails are sent. The employer sees an on-screen confirmation with a reference number.
+
+**Moderating (for Roshan):** open **https://jobs.kaamkotha.com/admin**. Cloudflare Access asks for
+your email and sends a one-time PIN. Only `roshan@kaamkotha.com` and `roosan.gm@gmail.com` are
+allowed. Sessions last 24 hours. The worker also verifies the Access JWT (signature, audience, issuer,
+expiry and email allowlist), so `/admin` on `*.pages.dev` refuses access.
+
+### Setting it up from scratch (all on the free tier)
+
+1. **D1:** `npx wrangler d1 create kaam-kotha-jobs`. Put the id in `wrangler.toml`, then run
+   `npx wrangler d1 migrations apply kaam-kotha-jobs --remote`. In the Pages project, bind it as `DB`
+   for production and preview (**Settings → Bindings**).
+2. **Turnstile:** in the dashboard go to **Turnstile → Add widget**. Choose mode *Managed* and add
+   the domains `jobs.kaamkotha.com` and `kaam-kotha-jobs.pages.dev`. Put the site key in
+   `wrangler.toml` (`TURNSTILE_SITEKEY`) and `site/assets/post.js`. Store the secret only as a Pages
+   secret: `npx wrangler pages secret put TURNSTILE_SECRET --project-name kaam-kotha-jobs`.
+3. **Cloudflare Access** (Zero Trust, free for up to 50 users):
+   - Go to **Access → Applications → Add → Self-hosted**.
+   - Add the destinations `jobs.kaamkotha.com/admin` and `jobs.kaamkotha.com/api/admin`.
+   - Set the identity provider to *One-time PIN*.
+   - Add an Allow policy that includes the two admin emails.
+   - Copy the application's **AUD tag** into `ACCESS_AUD` and your team domain into
+     `ACCESS_TEAM_DOMAIN`, both in `wrangler.toml`.
+4. Deploy: `npx wrangler pages deploy` (it reads `wrangler.toml`), or let the workflow do it.
+
+`wrangler.toml` is the source of truth for bindings and public variables on every
+`wrangler pages deploy`. Secrets live only in Cloudflare.
 
 ## What the pipeline does
 
@@ -76,9 +155,10 @@ You can link straight to a filtered view, for example
 - Every displayed advert carries a **"Jobs by Adzuna"** label (minimum 124×28 px) in which the word
   *Adzuna* links to adzuna.co.uk (UK) or adzuna.com.au (AU), as Adzuna's terms require.
 - **Apply** buttons always use Adzuna's `redirect_url`.
-- Adzuna job pages (`/jobs/*`) carry `<meta name="robots" content="noindex, follow">` and an
-  `X-Robots-Tag: noindex` header (`site/_headers`). They have no JobPosting schema, because Google
-  doesn't allow incomplete descriptions. `sitemap.xml` lists only the home and post-a-job pages.
+- Adzuna job pages (`/jobs/<id>`) carry `<meta name="robots" content="noindex, follow">` and an
+  `X-Robots-Tag: noindex` header, set by `site/_worker.js`. They have no JobPosting schema, because
+  Google doesn't allow incomplete descriptions. The dynamic `sitemap.xml` lists only the home page,
+  post-a-job and approved employer posts (`/jobs/p/<id>`), which are indexable.
 - Before going live, replace the CSS text label with Adzuna's official logo image, from the
   press page linked in their API terms.
 - Adzuna's terms allow publishing listings with attribution, but they mention a 14-day trial for
@@ -115,7 +195,7 @@ Calls per run = (number of areas) × (number of industries), added up for each c
 ## Deploy for free (GitHub Actions + Cloudflare Pages)
 
 This repository is **public**, so it contains code only. The job database, raw API responses, call
-logs and the generated site (`site/jobs/`, `site/data/`, `sitemap.xml`) are git-ignored, and the
+logs and the generated site (`site/jobs/`, `site/data/`) are git-ignored, and the
 workflow **never commits data back**. It rebuilds the site on each run and keeps the SQLite DB between
 runs with `actions/cache`.
 
@@ -133,24 +213,26 @@ If either secret is missing, the workflow stops at once with a clear error and m
 
 ### 2. Free Cloudflare Pages deploy (optional; until then the site is uploaded as an artifact)
 
-1. Create a free Cloudflare account. Go to **Workers & Pages → Create → Pages → Direct Upload**
-   and create a project named **`kaam-kotha-jobs`**. You can upload any placeholder folder the first
-   time.
+1. The Pages project **`kaam-kotha-jobs`** already exists (Direct Upload) with the D1 binding,
+   variables and Turnstile secret described above. For a fresh account, create it under
+   **Workers & Pages → Create → Pages → Direct Upload**.
 2. Create an API token (**My Profile → API Tokens → Create Token → Custom token**) with the
-   permission **Account · Cloudflare Pages · Edit**. Copy your **Account ID** from the dashboard
-   sidebar.
+   permissions **Account · Cloudflare Pages · Edit** and **Account · D1 · Edit** (needed for the D1
+   binding in `wrangler.toml`). Copy your **Account ID** from the dashboard sidebar.
 3. Add two more repository secrets: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 4. Run the workflow: **Actions → refresh-jobs → Run workflow**. It then runs on its own every 2 days
-   at 05:15 UTC. The site appears at `https://kaam-kotha-jobs.pages.dev`.
-5. Optional custom domain: in the Pages project go to **Custom domains → Set up a custom domain**,
-   enter for example `jobs.kaamkotha.com`, and add the CNAME it shows at your DNS provider. The
-   nameservers don't need to move. That hostname already resolved to something (HTTP 526 on
-   16 October 2026), so check what is using it first.
+   at 05:15 UTC. `wrangler pages deploy site` uploads the static files and `site/_worker.js`, and
+   keeps the D1 binding from `wrangler.toml`.
+5. Custom domain: **https://jobs.kaamkotha.com** is connected and live (proxied CNAME
+   `jobs → kaam-kotha-jobs.pages.dev`, Google-issued certificate). It also works at
+   `https://kaam-kotha-jobs.pages.dev`, except for `/admin`, which is only available on the custom
+   domain because Access protects it there.
 
 If the Cloudflare secrets aren't set, the deploy step is skipped. The built `site/` is then uploaded
 as the workflow artifact `kaam-kotha-jobs-site` and kept for 3 days, so you can download and preview it.
 
-`site/_headers` is applied by Cloudflare Pages. It adds `X-Robots-Tag: noindex` to all Adzuna job pages.
+`site/_headers` sets security and caching headers for static files. The worker adds
+`X-Robots-Tag: noindex` to Adzuna job pages and `/data/*`.
 
 ### Cost and limits
 
@@ -160,6 +242,10 @@ as the workflow artifact `kaam-kotha-jobs-site` and kept for 3 days, so you can 
 - **Cloudflare Pages:** the free plan allows 500 builds a month and 20,000 files per site. This site
   uses about 1,500 files per deploy and about 15 deploys a month.
 - **Adzuna:** about 960 of the 2,500 free calls a month (see the budget above).
+- **Workers/Pages Functions:** free plan, 100,000 requests a day. Only `/api/*`, `/admin`,
+  `/jobs/p/*` and `/sitemap.xml` do real work; the rest are served as static files.
+- **D1:** free plan, 5 GB storage, 5 million rows read and 100,000 rows written a day.
+- **Turnstile and Access:** free (Access is free for up to 50 users).
 - **Running cost: £0 a month.**
 
 ## Known limitations (prototype)
@@ -169,8 +255,13 @@ as the workflow artifact `kaam-kotha-jobs-site` and kept for 3 days, so you can 
 - Most Australian Adzuna ads carry no salary, so about 84% of AU jobs show *Pay not stated*.
 - The relevance and pay rules are heuristics. Annual figures are converted at 40 h/week, so the
   "≈ £x/hr" shown is approximate.
-- The *Post a job free* form and the *Get the app* button are placeholders: nothing is submitted, and
-  the button links to `link.kaamkotha.com/go`.
-- `site/data/jobs.json` is about 0.9 MB, which is fine for a prototype. For the full build, move to
-  Cloudflare D1 plus Pages Functions, as in the seeding plan §4.
+- The *Get the app* button links to `link.kaamkotha.com/go`.
+- No emails are sent, either to employers (approval or rejection) or to admins (new pending post).
+  Check `/admin` regularly.
+- Expiry happens when the data is read, on `/api/jobs`, `/admin` and job pages, because Pages has no
+  cron triggers.
+- Employer posts aren't tied to a community area yet, so the *area* filter hides them.
+- The fair-hiring filter is keyword-based. It catches the common phrasings, not every one, so human
+  moderation is still the final check.
+- Adzuna jobs still come from `site/data/jobs.json` (about 0.9 MB) rather than D1.
 - The Kaam Kotha logo is a placeholder (the "का" mark).

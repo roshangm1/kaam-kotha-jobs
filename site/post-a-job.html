@@ -1,43 +1,206 @@
 <!doctype html>
 <html lang="en-GB">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Post a job free | Kaam Kotha Jobs</title>
-<link rel="stylesheet" href="assets/app.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Post a job free – Kaam Kotha Jobs</title>
+<meta name="description" content="Employers in the UK and Australia: post a job free on Kaam Kotha Jobs. Reach Nepali community jobseekers. Every listing is checked before it goes live.">
+<meta name="theme-color" content="#0b1f4d">
+<link rel="canonical" href="https://jobs.kaamkotha.com/post-a-job">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </head>
 <body>
-<header class="top"><a class="brand" href="index.html"><span class="logo" aria-hidden="true">का</span><span>Kaam Kotha <b>Jobs</b></span></a></header>
-<main class="wrap narrow">
-  <h1>Post a job free</h1>
-  <p>Reach Nepali job seekers near your business in the UK and Australia. Free for founding employers. <span lang="ne">निःशुल्क काम पोस्ट गर्नुहोस्।</span></p>
-  <p class="small notice">Prototype: this form is not connected yet. Nothing is sent or stored.</p>
-  <form id="post" class="postform">
-    <label>Business name<input required name="business"></label>
-    <label>Country<select name="country"><option value="gb">United Kingdom</option><option value="au">Australia</option></select></label>
-    <label>Job title<input required name="title" placeholder="e.g. Kitchen porter"></label>
-    <label>Industry<select name="industry">
-      <option>Care &amp; health</option><option>Restaurants &amp; kitchens</option><option>Retail &amp; grocery</option><option>Cleaning</option>
-      <option>Warehouse</option><option>Security</option><option>Delivery &amp; driving</option><option>Hotels</option></select></label>
-    <label>Postcode / suburb<input required name="where"></label>
-    <label>Hourly pay<input required name="pay" type="number" step="0.01" min="0" placeholder="e.g. 12.71"></label>
-    <label>Hours per week<input name="hours" type="number" min="1" max="60"></label>
-    <label>How to apply (email or link)<input required name="apply"></label>
-    <label>Job description<textarea name="desc" rows="5" placeholder="Duties, shifts, requirements"></textarea></label>
-    <label class="chk"><input type="checkbox" required> I confirm the pay is at least the legal minimum, the job is legal, and candidates will not be charged any fee.</label>
-    <button class="btn" type="submit">Submit job (prototype)</button>
-    <p id="post-msg" class="small" aria-live="polite"></p>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true">का</span><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
+    <div class="nav-actions"><a class="btn btn-ghost" href="/">Browse jobs</a></div>
+  </div>
+</header>
+
+<section class="hero" style="padding-bottom:48px">
+  <div class="wrap">
+    <h1>Post a job, <em>free.</em></h1>
+    <p>Reach jobseekers in Nepali communities across the UK and Australia. A person checks every listing before it goes live, usually within a working day. Listings stay up for 30 days.</p>
+    <span class="ne" lang="ne">कामदार खोज्दै हुनुहुन्छ? निःशुल्क जागिर पोस्ट गर्नुहोस्।</span>
+  </div>
+</section>
+
+<main class="wrap form-grid" id="main">
+  <form id="post-form" novalidate>
+    <div class="section">
+      <h2><span class="num">1</span>The job</h2>
+      <p>Tell people what the role is.</p>
+      <div class="fld" data-f="title">
+        <label for="title">Job title</label>
+        <input class="input" id="title" name="title" maxlength="100" required placeholder="e.g. Kitchen porter, Care assistant">
+        <span class="err"></span>
+      </div>
+      <div class="row">
+        <div class="fld" data-f="industry">
+          <label for="industry">Industry</label>
+          <select class="select" id="industry" name="industry" required>
+            <option value="">Choose…</option>
+            <option value="care">🩺 Care &amp; health</option>
+            <option value="hospitality">🍳 Restaurants &amp; kitchens</option>
+            <option value="retail">🛒 Retail &amp; grocery</option>
+            <option value="cleaning">🧽 Cleaning</option>
+            <option value="warehouse">📦 Warehouse</option>
+            <option value="security">🛡️ Security</option>
+            <option value="delivery">🚚 Delivery &amp; driving</option>
+            <option value="hotels">🏨 Hotels</option>
+          </select>
+          <span class="err"></span>
+        </div>
+        <div class="fld" data-f="contract_type">
+          <label for="contract_type">Hours / contract</label>
+          <select class="select" id="contract_type" name="contract_type" required>
+            <option value="">Choose…</option>
+            <option value="full_time">Full-time</option>
+            <option value="part_time">Part-time</option>
+            <option value="casual">Casual</option>
+            <option value="temporary">Temporary</option>
+            <option value="contract">Contract</option>
+          </select>
+          <span class="err"></span>
+        </div>
+      </div>
+      <div class="fld" data-f="description">
+        <label for="description">Description</label>
+        <textarea class="input" id="description" name="description" maxlength="5000" required placeholder="Duties, shifts, experience needed, right-to-work requirements, training offered…"></textarea>
+        <div class="counter"><span id="desc-count">0</span> / 5000 · minimum 80 characters</div>
+        <span class="hint">Listings must be open to everyone. Don't ask for a particular nationality, ethnicity, religion, age or gender, and never charge candidates a fee.</span>
+        <span class="err"></span>
+      </div>
+      <label class="switch" for="student_friendly">
+        <span><b>🎓 Student-friendly</b><br><span class="muted" style="font-size:13px">Flexible or part-time hours that fit around study (UK: 20 hrs/week in term; AU: 48 hrs/fortnight).</span></span>
+        <input type="checkbox" id="student_friendly" name="student_friendly">
+      </label>
+    </div>
+
+    <div class="section">
+      <h2><span class="num">2</span>Employer &amp; location</h2>
+      <p>Where is the work?</p>
+      <div class="fld" data-f="employer">
+        <label for="employer">Employer / business name</label>
+        <input class="input" id="employer" name="employer" maxlength="100" required placeholder="e.g. Everest Kitchen Ltd">
+        <span class="err"></span>
+      </div>
+      <div class="fld" data-f="country">
+        <span class="lbl" id="country-lbl">Country</span>
+        <div class="radio-cards" role="radiogroup" aria-labelledby="country-lbl" style="grid-template-columns:1fr 1fr">
+          <label><input type="radio" name="country" value="gb" checked> 🇬🇧 United Kingdom</label>
+          <label><input type="radio" name="country" value="au"> 🇦🇺 Australia</label>
+        </div>
+        <span class="err"></span>
+      </div>
+      <div class="row">
+        <div class="fld" data-f="town">
+          <label for="town">Town / suburb</label>
+          <input class="input" id="town" name="town" maxlength="80" required placeholder="e.g. Aldershot">
+          <span class="err"></span>
+        </div>
+        <div class="fld" data-f="postcode">
+          <label for="postcode">Postcode</label>
+          <input class="input" id="postcode" name="postcode" maxlength="10" required placeholder="e.g. GU11 1AA" autocapitalize="characters">
+          <span class="err"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="num">3</span>Pay &amp; hours</h2>
+      <p>Pay must be at least the minimum wage: <b id="mw-text">£12.71 an hour (UK National Living Wage, 21+)</b>.</p>
+      <div class="row3">
+        <div class="fld" data-f="pay_amount">
+          <label for="pay_amount">Pay (<span id="cur">£</span>)</label>
+          <input class="input" id="pay_amount" name="pay_amount" type="number" inputmode="decimal" min="0" step="0.01" required placeholder="13.50">
+          <span class="err"></span>
+        </div>
+        <div class="fld" data-f="pay_period">
+          <label for="pay_period">Per</label>
+          <select class="select" id="pay_period" name="pay_period" required>
+            <option value="hour">Hour</option>
+            <option value="week">Week</option>
+            <option value="year">Year</option>
+          </select>
+          <span class="err"></span>
+        </div>
+        <div class="fld" data-f="hours_per_week">
+          <label for="hours_per_week">Hours a week</label>
+          <input class="input" id="hours_per_week" name="hours_per_week" type="number" inputmode="numeric" min="1" max="60" step="0.5" required placeholder="20">
+          <span class="err"></span>
+        </div>
+      </div>
+      <div class="callout" id="wage-check" hidden></div>
+    </div>
+
+    <div class="section">
+      <h2><span class="num">4</span>How to apply</h2>
+      <p>Shown publicly on the listing.</p>
+      <div class="fld" data-f="apply_method">
+        <div class="radio-cards" role="radiogroup" aria-label="Apply method">
+          <label><input type="radio" name="apply_method" value="email" checked> ✉️ Email</label>
+          <label><input type="radio" name="apply_method" value="phone"> 📞 Phone</label>
+          <label><input type="radio" name="apply_method" value="url"> 🔗 Website</label>
+        </div>
+      </div>
+      <div class="fld" data-f="apply_value">
+        <label for="apply_value" id="apply-label">Email address for applications</label>
+        <input class="input" id="apply_value" name="apply_value" maxlength="300" required placeholder="jobs@yourbusiness.co.uk">
+        <span class="err"></span>
+      </div>
+      <div class="fld" data-f="contact_email">
+        <label for="contact_email">Your contact email (private)</label>
+        <input class="input" id="contact_email" name="contact_email" type="email" maxlength="120" required placeholder="you@yourbusiness.co.uk" autocomplete="email">
+        <span class="hint">Only Kaam Kotha sees this, in case we have a question about your listing. It is never shown publicly unless you chose email above and used the same address.</span>
+        <span class="err"></span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="num">5</span>Check &amp; submit</h2>
+      <div class="fld" data-f="consent">
+        <label class="consent"><input type="checkbox" id="consent" name="consent" required>
+          <span>I confirm this is a real, lawful vacancy that I'm authorised to advertise; it pays at least the minimum wage, is open to everyone regardless of nationality, ethnicity, religion, age or gender, and doesn't charge candidates any fee. I agree Kaam Kotha may review, edit or remove the listing.</span></label>
+        <span class="err"></span>
+      </div>
+      <div class="fld" data-f="turnstile">
+        <div id="turnstile"></div>
+        <span class="err"></span>
+      </div>
+      <div class="callout warn" id="form-error" role="alert" hidden></div>
+      <button class="btn btn-primary btn-lg btn-block" id="submit" type="submit">Submit for review</button>
+      <p class="note" style="text-align:center;margin-top:10px">Free. No account needed. We'll check it before it goes live.</p>
+    </div>
   </form>
+
+  <aside class="preview" aria-label="Live preview">
+    <h3>Live preview</h3>
+    <ol class="list"><li class="job direct" id="preview"></li></ol>
+    <div class="panel" style="margin-top:14px">
+      <h3>What happens next</h3>
+      <div class="legend">
+        <div>1️⃣ <span>We check the listing (pay, fairness, legitimacy).</span></div>
+        <div>2️⃣ <span>It goes live with a <b>Posted directly by employer</b> badge, ahead of aggregated jobs.</span></div>
+        <div>3️⃣ <span>It expires automatically after 30 days.</span></div>
+      </div>
+    </div>
+  </aside>
 </main>
-<footer class="foot"><a href="index.html">← Back to jobs</a></footer>
-<script>
-const floors = {gb: 12.71, au: 26.44};
-document.getElementById('post').addEventListener('submit', e => {
-  e.preventDefault();
-  const f = new FormData(e.target), c = f.get('country'), pay = parseFloat(f.get('pay'));
-  const msg = document.getElementById('post-msg');
-  if (pay < floors[c]) { msg.textContent = `Pay is below the minimum of ${c==='gb'?'£':'A$'}${floors[c]} an hour, so we can't list this job.`; msg.className='small err'; return; }
-  msg.textContent = 'Thanks! (Prototype: not sent. In the live version this goes to a moderation queue.)'; msg.className='small ok';
-});
-</script>
+
+<section class="wrap narrow" id="done" hidden>
+  <div class="section success" style="margin:28px auto 60px">
+    <div class="big" aria-hidden="true">🎉</div>
+    <h2 style="justify-content:center;font-size:24px">Thanks, your job has been submitted</h2>
+    <p class="muted">Reference <b id="ref"></b>. A person will check it, usually within a working day, and it will appear on Kaam Kotha Jobs once approved. It stays live for 30 days.</p>
+    <p><a class="btn btn-primary" href="/post-a-job">Post another job</a> <a class="btn btn-ghost" href="/">Browse jobs</a></p>
+  </div>
+</section>
+
+<footer class="footer"><div class="wrap"><span>Kaam Kotha Jobs · <span lang="ne">काम कोठा</span></span><span><a href="/">All jobs</a></span></div></footer>
+<script src="/assets/post.js" defer></script>
 </body>
 </html>
