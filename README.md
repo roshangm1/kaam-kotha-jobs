@@ -242,6 +242,14 @@ KK monogram. The favicons (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.pn
 `icon-192/512.png`, `site.webmanifest`) are generated from the same logo. The homepage and
 post-a-job carry Open Graph and Twitter tags pointing at `/og-image.png` (1200×630 launch image).
 
+**Analytics:** Cloudflare Web Analytics has its own site for `jobs.kaamkotha.com` (site tag
+`8a405173ed44439c8428f28fff38684c`, manual snippet). The beacon (its token is public by design) is
+in `index.html`, `post-a-job.html`, the Adzuna job page template (`build_site.py`) and the
+worker-rendered employer job and message pages. It is not on the `/admin` moderation UI. View it in
+the Cloudflare dashboard under **Analytics & Logs → Web Analytics → jobs.kaamkotha.com**. The site
+has no Content-Security-Policy; if you add one, allow `static.cloudflareinsights.com` (script-src)
+and `cloudflareinsights.com` (connect-src).
+
 `site/_headers` sets security and caching headers for static files. The worker adds
 `X-Robots-Tag: noindex` to Adzuna job pages and `/data/*`.
 

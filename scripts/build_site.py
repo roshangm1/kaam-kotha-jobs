@@ -70,6 +70,9 @@ HEAD_LINKS = (
     '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">')
 ICON = {"care": "🩺", "hospitality": "🍳", "retail": "🛒", "cleaning": "🧽", "warehouse": "📦",
         "security": "🛡️", "delivery": "🚚", "hotels": "🏨"}
+# Cloudflare Web Analytics beacon for the jobs.kaamkotha.com site (the token is public by design)
+CF_BEACON = ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+             'data-cf-beacon=\'{"token": "081f3b1f7ad047579730db5b6f170fa8"}\'></script>')
 PAY_PILL = {"meets_min": ("ok", "✓ Min. wage+"), "check": ("warn", "Check pay"), "unknown": ("", "Pay not stated")}
 
 
@@ -116,6 +119,7 @@ def job_page(j, area_names, ind_names):
 </main>
 <nav class="bottom-bar" aria-label="Apply"><a class="btn btn-primary" href="{e(j['redirect_url'])}" rel="nofollow noopener" target="_blank">Apply</a><a class="adzuna" href="{dom}" rel="noopener" target="_blank">Jobs by <b>Adzuna</b></a></nav>
 <footer class="footer"><div class="wrap"><span>Job listing provided by <a class="adzuna" href="{dom}" rel="noopener" target="_blank">Jobs by <b>Adzuna</b></a></span><span><a href="/">All jobs</a></span></div></footer>
+{CF_BEACON}
 </body></html>"""
 
 
