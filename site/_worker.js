@@ -249,7 +249,7 @@ const HEAD = (title, extra = '') => `<!doctype html><html lang="en-GB"><head><me
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="/assets/app.css?v=ba92b9485b">${extra}</head><body>
 <header class="nav"><div class="wrap"><a class="brand" href="/"><img class="logo" src="/assets/kk-logo-160.webp?v=48634866ff" alt="" width="50" height="40"><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
-<div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>`;
+<div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go?utm_source=jobs-kk">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>`;
 // Cloudflare Web Analytics beacon (site: jobs.kaamkotha.com; token is public by design). Not added to /admin.
 const CF_BEACON = `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "081f3b1f7ad047579730db5b6f170fa8"}'></script>`;
 const FOOT_ADMIN = `<footer class="footer"><div class="wrap"><span>Kaam Kotha Jobs · <span lang="ne">काम कोठा</span></span><span><a href="/">All jobs</a> · <a href="/post-a-job">Post a job</a></span></div></footer></body></html>`;
@@ -307,7 +307,7 @@ function jobPage(p) {
     </div>
     <p class="note" style="margin-top:16px">Posted ${esc(posted)}. Checked by Kaam Kotha before publishing. Never pay an employer or agent to get a job; report anything suspicious to roshan@kaamkotha.com.</p>
   </article>
-  <div class="panel app-panel" style="margin-top:16px"><h3>Get job alerts in the Kaam Kotha app</h3><p>New ${esc(INDUSTRIES[p.industry].toLowerCase())} jobs near you, straight to your phone.</p><a class="btn btn-primary" href="https://link.kaamkotha.com/go">Get the app</a></div>
+  <div class="panel app-panel" style="margin-top:16px"><h3>Get job alerts in the Kaam Kotha app</h3><p>New ${esc(INDUSTRIES[p.industry].toLowerCase())} jobs near you, straight to your phone.</p><a class="btn btn-primary" href="https://link.kaamkotha.com/go?utm_source=jobs-kk">Get the app</a></div>
 </main>
 <nav class="bottom-bar" aria-label="Apply"><a class="btn btn-primary" href="${esc(applyHref)}" ${p.apply_method === 'url' ? 'target="_blank" rel="nofollow noopener"' : ''}>${applyLabel}</a></nav>
 ${FOOT}`, 200, {'cache-control': 'public, max-age=300'});

@@ -274,7 +274,7 @@ and `cloudflareinsights.com` (connect-src).
 - Most Australian Adzuna ads carry no salary, so about 84% of AU jobs show *Pay not stated*.
 - The relevance and pay rules are heuristics. Annual figures are converted at 40 h/week, so the
   "≈ £x/hr" shown is approximate.
-- The *Get the app* button links to `link.kaamkotha.com/go`.
+- The *Get the app* button links to `link.kaamkotha.com/go?utm_source=jobs-kk`.
 - No emails are sent, either to employers (approval or rejection) or to admins (new pending post).
   Check `/admin` regularly.
 - Expiry happens when the data is read, on `/api/jobs`, `/admin` and job pages, because Pages has no

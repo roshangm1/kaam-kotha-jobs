@@ -94,7 +94,7 @@ def job_page(j, area_names, ind_names):
 {HEAD_LINKS}
 </head><body>
 <header class="nav"><div class="wrap"><a class="brand" href="/?country={j['country']}"><img class="logo" src="/assets/kk-logo-160.webp" alt="" width="50" height="40"><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
-<div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>
+<div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go?utm_source=jobs-kk">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>
 <main class="wrap narrow detail">
   <a class="crumb" href="/?country={j['country']}">← All {country} jobs</a>
   <article class="detail-card">
@@ -115,7 +115,7 @@ def job_page(j, area_names, ind_names):
     </div>
     <p class="note" style="margin-top:16px">Minimum-wage check uses {cur}{floor:.2f}/hr ({'UK National Living Wage, 21+' if j['country']=='gb' else 'Australian National Minimum Wage'}); awards, age and apprentice rates can differ. Always check the full advert. Never pay anyone to get a job.</p>
   </article>
-  <div class="panel app-panel" style="margin-top:16px"><h3>Get job alerts in the Kaam Kotha app</h3><p>New {e(ind.lower())} jobs near {e(area_names.get(j['area'], 'you'))}, straight to your phone.</p><a class="btn btn-primary" href="https://link.kaamkotha.com/go">Get the app</a></div>
+  <div class="panel app-panel" style="margin-top:16px"><h3>Get job alerts in the Kaam Kotha app</h3><p>New {e(ind.lower())} jobs near {e(area_names.get(j['area'], 'you'))}, straight to your phone.</p><a class="btn btn-primary" href="https://link.kaamkotha.com/go?utm_source=jobs-kk">Get the app</a></div>
 </main>
 <nav class="bottom-bar" aria-label="Apply"><a class="btn btn-primary" href="{e(j['redirect_url'])}" rel="nofollow noopener" target="_blank">Apply</a><a class="adzuna" href="{dom}" rel="noopener" target="_blank">Jobs by <b>Adzuna</b></a></nav>
 <footer class="footer"><div class="wrap"><span>Job listing provided by <a class="adzuna" href="{dom}" rel="noopener" target="_blank">Jobs by <b>Adzuna</b></a></span><span><a href="/">All jobs</a></span></div></footer>
