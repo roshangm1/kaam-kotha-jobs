@@ -1,10 +1,21 @@
-# Static asset headers. The advanced-mode worker (_worker.js) also sets X-Robots-Tag: noindex
-# on aggregated Adzuna job pages (/jobs/<id>) and /data/*; employer pages (/jobs/p/<id>) stay indexable.
+# Cache policy
+# - HTML: Pages default (max-age=0, must-revalidate), so new deploys show at once.
+# - /assets/*: every reference carries ?v=<content hash> (scripts/build_site.py), so the files
+#   can be cached for a year; a changed file gets a new URL on the next build.
+# The worker (_worker.js) also sets X-Robots-Tag: noindex on Adzuna job pages (/jobs/<id>) and /data/*.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
 /data/*
   X-Robots-Tag: noindex
   Cache-Control: public, max-age=900
-/assets/*
-  Cache-Control: public, max-age=3600
+/og-image.png
+  Cache-Control: public, max-age=86400
+/favicon*
+  Cache-Control: public, max-age=86400
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400
+/icon-*
+  Cache-Control: public, max-age=86400

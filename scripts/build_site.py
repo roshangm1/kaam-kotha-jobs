@@ -7,7 +7,7 @@ Output:
   (sitemap.xml is served dynamically by site/_worker.js)
 Jobs tagged pay 'below' are never published (see seeding plan §4.6).
 """
-import html, json, re, shutil, sqlite3
+import hashlib, html, json, re, shutil, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -16,6 +16,31 @@ CFG = json.loads((ROOT / "config.json").read_text())
 SITE = ROOT / "site"
 DB = ROOT / "data" / "jobs.sqlite"
 BASE_URL = "https://jobs.kaamkotha.com"   # change when deployed
+
+# Cache busting: every /assets/*.css|js|webp|png|svg reference gets ?v=<content hash>, so assets can be cached
+# for a year (site/_headers) and each deploy that changes a file changes its URL.
+ASSET_REF = re.compile(r'(/assets/([\w.-]+\.(?:css|js|webp|png|svg)))(?:\?v=[0-9a-f]+)?')
+VERSIONED_SOURCES = ["index.html", "post-a-job.html", "_worker.js"]
+
+
+def asset_hash(name):
+    return hashlib.sha256((SITE / "assets" / name).read_bytes()).hexdigest()[:10]
+
+
+def version_refs(text):
+    return ASSET_REF.sub(lambda m: f"{m.group(1)}?v={asset_hash(m.group(2))}"
+                         if (SITE / "assets" / m.group(2)).exists() else m.group(0), text)
+
+
+def version_sources():
+    """Rewrite asset references in the hand-written pages and the worker in place (idempotent)."""
+    for name in VERSIONED_SOURCES:
+        f = SITE / name
+        old = f.read_text()
+        new = version_refs(old)
+        if new != old:
+            f.write_text(new)
+
 
 PAY_LABEL = {"meets_min": "Pays minimum wage or more", "check": "Check pay",
              "unknown": "Pay not stated"}
@@ -41,7 +66,8 @@ def pay_text(j):
 HEAD_LINKS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">'
-    '<link rel="stylesheet" href="/assets/app.css">')
+    '<link rel="stylesheet" href="/assets/app.css">'
+    '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">')
 ICON = {"care": "🩺", "hospitality": "🍳", "retail": "🛒", "cleaning": "🧽", "warehouse": "📦",
         "security": "🛡️", "delivery": "🚚", "hotels": "🏨"}
 PAY_PILL = {"meets_min": ("ok", "✓ Min. wage+"), "check": ("warn", "Check pay"), "unknown": ("", "Pay not stated")}
@@ -64,7 +90,7 @@ def job_page(j, area_names, ind_names):
 <title>{e(j['title'])} – {e(j['location'])} | Kaam Kotha Jobs</title>
 {HEAD_LINKS}
 </head><body>
-<header class="nav"><div class="wrap"><a class="brand" href="/?country={j['country']}"><span class="mark" aria-hidden="true">का</span><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
+<header class="nav"><div class="wrap"><a class="brand" href="/?country={j['country']}"><img class="logo" src="/assets/kk-logo-160.webp" alt="" width="50" height="40"><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
 <div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>
 <main class="wrap narrow detail">
   <a class="crumb" href="/?country={j['country']}">← All {country} jobs</a>
@@ -125,7 +151,7 @@ def main():
 
     out = []
     for j in rows:
-        (jobs_dir / f"{j['id']}.html").write_text(job_page(j, area_names, ind_names))
+        (jobs_dir / f"{j['id']}.html").write_text(version_refs(job_page(j, area_names, ind_names)))
         out.append({
             "id": j["id"], "c": j["country"], "t": j["title"], "co": j["company"], "l": j["location"],
             "i": j["industry"], "is": j["industries"].split(","), "a": j["areas"].split(","),
@@ -140,6 +166,7 @@ def main():
         "hidden_below_min": hidden, "collapsed_duplicates": collapsed,
     }
     (SITE / "data" / "jobs.json").write_text(json.dumps({"meta": meta, "jobs": out}, ensure_ascii=False, separators=(",", ":")))
+    version_sources()
     # /sitemap.xml is generated dynamically by site/_worker.js (home, post-a-job, approved employer posts).
     (SITE / "sitemap.xml").unlink(missing_ok=True)
     print(f"Built {len(out)} job pages ({hidden} below-minimum jobs hidden, {collapsed} near-duplicates collapsed) -> {SITE}")

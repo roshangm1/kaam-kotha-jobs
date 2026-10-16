@@ -231,6 +231,17 @@ If either secret is missing, the workflow stops at once with a clear error and m
 If the Cloudflare secrets aren't set, the deploy step is skipped. The built `site/` is then uploaded
 as the workflow artifact `kaam-kotha-jobs-site` and kept for 3 days, so you can download and preview it.
 
+**Caching:** `scripts/build_site.py` adds `?v=<content hash>` to every `/assets/*` reference in
+`index.html`, `post-a-job.html`, `_worker.js` and the generated job pages, rewriting them in place.
+This lets `/assets/*` be cached for a year (`immutable`): a changed file gets a new URL on the next
+build, so deploys never serve stale CSS or JS. HTML keeps the Pages default (`max-age=0,
+must-revalidate`).
+
+**Brand and sharing:** the header logo is `site/assets/kk-logo-160.webp`, made from the Kaam Kotha
+KK monogram. The favicons (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`,
+`icon-192/512.png`, `site.webmanifest`) are generated from the same logo. The homepage and
+post-a-job carry Open Graph and Twitter tags pointing at `/og-image.png` (1200×630 launch image).
+
 `site/_headers` sets security and caching headers for static files. The worker adds
 `X-Robots-Tag: noindex` to Adzuna job pages and `/data/*`.
 

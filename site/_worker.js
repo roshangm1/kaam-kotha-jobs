@@ -246,8 +246,9 @@ const HEAD = (title, extra = '') => `<!doctype html><html lang="en-GB"><head><me
 <title>${esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="/assets/app.css">${extra}</head><body>
-<header class="nav"><div class="wrap"><a class="brand" href="/"><span class="mark" aria-hidden="true">का</span><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/app.css?v=ba92b9485b">${extra}</head><body>
+<header class="nav"><div class="wrap"><a class="brand" href="/"><img class="logo" src="/assets/kk-logo-160.webp?v=48634866ff" alt="" width="50" height="40"><span>Kaam Kotha Jobs<small>Real jobs, paid properly</small></span></a>
 <div class="nav-actions"><a class="btn btn-ghost" href="https://link.kaamkotha.com/go">Get the app</a><a class="btn btn-primary" href="/post-a-job">Post a job free</a></div></div></header>`;
 const FOOT = `<footer class="footer"><div class="wrap"><span>Kaam Kotha Jobs · <span lang="ne">काम कोठा</span></span><span><a href="/">All jobs</a> · <a href="/post-a-job">Post a job</a></span></div></footer></body></html>`;
 const html = (body, status = 200, extra = {}) => new Response(body, {status, headers: {'content-type': 'text/html; charset=utf-8', 'x-content-type-options': 'nosniff', 'referrer-policy': 'strict-origin-when-cross-origin', ...extra}});
@@ -280,7 +281,7 @@ function jobPage(p) {
   const closes = new Date(p.expires_at).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/London'});
   return html(`${HEAD(`${p.title} – ${p.employer}, ${p.town} | Kaam Kotha Jobs`, `
 <meta name="description" content="${esc(metaDesc.slice(0, 300))}"><link rel="canonical" href="${url}">
-<meta property="og:title" content="${esc(p.title)} – ${esc(p.employer)}"><meta property="og:description" content="${esc(metaDesc.slice(0, 200))}"><meta property="og:url" content="${url}"><meta property="og:type" content="website">
+<meta property="og:title" content="${esc(p.title)} – ${esc(p.employer)}"><meta property="og:description" content="${esc(metaDesc.slice(0, 200))}"><meta property="og:url" content="${url}"><meta property="og:type" content="website"><meta property="og:image" content="${BASE}/og-image.png"><meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">${ldJson}</script>`)}
 <main class="wrap narrow detail">
   <a class="crumb" href="/?country=${c}">← All ${COUNTRY[c]} jobs</a>
@@ -333,7 +334,7 @@ function adminPage(who) {
   <div class="tabs" id="tabs"></div>
   <div id="items"><div class="skeleton"><div class="sk" style="width:50%"></div><div class="sk" style="width:80%"></div></div></div>
 </main>
-<script src="/assets/admin.js" defer></script>${FOOT}`, 200, {'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow'});
+<script src="/assets/admin.js?v=35053c4c69" defer></script>${FOOT}`, 200, {'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow'});
 }
 
 // ---------- router ----------
